@@ -5,10 +5,14 @@
 </head>
 <body>
   <h2>Chat with the Python Tutor</h2>
-  <form method="POST">
-    <input type="text" name="user_input" placeholder="Ask me something..." style="width:300px" required>
+  <form method="POST" enctype="multipart/form-data">
+    <input type="text" name="user_input" placeholder="Ask me something..." style="width:300px"><br><br>
+    <label>Upload image (optional):</label>
+    <input type="file" name="image" accept="image/*"><br><br>
     <button type="submit">Send</button>
   </form>
+  <br>
+  <a href="/reset"><button type="button">New Chat</button></a>
   {% if reply %}
     <p><b>Assistant:</b> {{ reply }}</p>
     <p><i>Token usage — {{ usage }}</i></p>
