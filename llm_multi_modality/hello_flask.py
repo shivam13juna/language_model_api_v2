@@ -51,4 +51,4 @@ def index():
     return render_template("index.html", reply=reply, usage=usage_info)
 
 
-# Run with: flask --app hello_flask.py run
+# Run with: flask run --app hello_flask.py --debug

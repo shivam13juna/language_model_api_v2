@@ -1,0 +1,18 @@
+
+<html>
+<head>
+  <title>Python Tutor Chatbot</title>
+</head>
+<body>
+  <h2>Chat with the Python Tutor</h2>
+  <form method="POST">
+    <input type="text" name="user_input" placeholder="Ask me something..." style="width:300px" required>
+    <button type="submit">Send</button>
+  </form>
+  {% if reply %}
+    <p><b>Assistant:</b> {{ reply }}</p>
+    <p><i>Token usage — {{ usage }}</i></p>
+  {% endif %}
+</body>
+</html>
+
