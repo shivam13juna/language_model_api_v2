@@ -1,0 +1,367 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Local RAG Search</title>
+    <style>
+        :root {
+            --bg: #0f1117;
+            --surface: #1a1d2e;
+            --border: #2a2d3e;
+            --accent: #6c63ff;
+            --accent-hover: #7f78ff;
+            --text: #e4e4e7;
+            --text-muted: #9ca3af;
+            --success: #22c55e;
+            --tag-bg: #2a2d3e;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 960px;
+            margin: 0 auto;
+            padding: 2rem 1.5rem;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        header h1 {
+            font-size: 1.8rem;
+            font-weight: 700;
+            margin-bottom: 0.4rem;
+        }
+
+        header h1 span { color: var(--accent); }
+
+        .meta {
+            color: var(--text-muted);
+            font-size: 0.85rem;
+        }
+
+        /* Search bar */
+        .search-bar {
+            display: flex;
+            gap: 0.6rem;
+            margin-bottom: 2rem;
+        }
+
+        .search-bar input {
+            flex: 1;
+            padding: 0.75rem 1rem;
+            border-radius: 8px;
+            border: 1px solid var(--border);
+            background: var(--surface);
+            color: var(--text);
+            font-size: 1rem;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+
+        .search-bar input:focus {
+            border-color: var(--accent);
+        }
+
+        .search-bar button {
+            padding: 0.75rem 1.5rem;
+            border: none;
+            border-radius: 8px;
+            background: var(--accent);
+            color: #fff;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.2s;
+            white-space: nowrap;
+        }
+
+        .search-bar button:hover { background: var(--accent-hover); }
+        .search-bar button:disabled { opacity: 0.5; cursor: not-allowed; }
+
+        /* Spinner */
+        .spinner {
+            display: none;
+            text-align: center;
+            padding: 2rem 0;
+            color: var(--text-muted);
+        }
+
+        .spinner.active { display: block; }
+
+        .spinner::before {
+            content: '';
+            display: inline-block;
+            width: 24px;
+            height: 24px;
+            border: 3px solid var(--border);
+            border-top-color: var(--accent);
+            border-radius: 50%;
+            animation: spin 0.7s linear infinite;
+            margin-right: 0.5rem;
+            vertical-align: middle;
+        }
+
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        /* Results */
+        #results { margin-top: 1rem; }
+
+        .section-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin: 1.5rem 0 0.75rem;
+            padding-bottom: 0.4rem;
+            border-bottom: 1px solid var(--border);
+        }
+
+        /* Hits table */
+        .hits-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.85rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .hits-table th {
+            text-align: left;
+            padding: 0.5rem 0.6rem;
+            background: var(--surface);
+            border-bottom: 2px solid var(--border);
+            color: var(--text-muted);
+            font-weight: 600;
+            text-transform: uppercase;
+            font-size: 0.75rem;
+            letter-spacing: 0.04em;
+        }
+
+        .hits-table td {
+            padding: 0.5rem 0.6rem;
+            border-bottom: 1px solid var(--border);
+            vertical-align: top;
+        }
+
+        .hits-table tr:hover td { background: rgba(108, 99, 255, 0.05); }
+
+        .score-badge {
+            display: inline-block;
+            padding: 0.15rem 0.5rem;
+            border-radius: 999px;
+            font-weight: 600;
+            font-size: 0.8rem;
+        }
+
+        .score-high   { background: #166534; color: #86efac; }
+        .score-mid    { background: #854d0e; color: #fde68a; }
+        .score-low    { background: #44403c; color: #d6d3d1; }
+
+        /* Context cards */
+        .context-card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 1.2rem;
+            margin-bottom: 1rem;
+            transition: border-color 0.2s;
+        }
+
+        .context-card:hover { border-color: var(--accent); }
+
+        .context-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 0.6rem;
+            flex-wrap: wrap;
+            gap: 0.4rem;
+        }
+
+        .context-title {
+            font-weight: 700;
+            font-size: 1rem;
+        }
+
+        .tag {
+            display: inline-block;
+            padding: 0.15rem 0.55rem;
+            border-radius: 6px;
+            background: var(--tag-bg);
+            color: var(--text-muted);
+            font-size: 0.75rem;
+        }
+
+        .context-text {
+            font-size: 0.88rem;
+            line-height: 1.65;
+            color: var(--text-muted);
+            white-space: pre-wrap;
+            max-height: 260px;
+            overflow-y: auto;
+            padding-right: 0.5rem;
+        }
+
+        .context-text::-webkit-scrollbar { width: 5px; }
+        .context-text::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+
+        .toggle-btn {
+            margin-top: 0.5rem;
+            background: none;
+            border: none;
+            color: var(--accent);
+            cursor: pointer;
+            font-size: 0.82rem;
+            font-weight: 600;
+            padding: 0;
+        }
+
+        .toggle-btn:hover { text-decoration: underline; }
+
+        .error-msg {
+            color: #ef4444;
+            background: #1c1012;
+            border: 1px solid #7f1d1d;
+            border-radius: 8px;
+            padding: 1rem;
+            margin-top: 1rem;
+        }
+
+        .query-echo {
+            color: var(--text-muted);
+            font-size: 0.85rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .query-echo strong { color: var(--text); }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1><span>⚡</span> Local RAG Search</h1>
+            <p class="meta">{{ num_chunks }} chunks indexed &middot; Model: {{ embed_model }}</p>
+        </header>
+
+        <div class="search-bar">
+            <input type="text" id="queryInput" placeholder="Ask anything about the books…"
+                   autofocus autocomplete="off" />
+            <button id="searchBtn" onclick="doSearch()">Search</button>
+        </div>
+
+        <div class="spinner" id="spinner">Searching …</div>
+
+        <div id="results"></div>
+    </div>
+
+    <script>
+        const input = document.getElementById('queryInput');
+        const btn = document.getElementById('searchBtn');
+        const spinner = document.getElementById('spinner');
+        const results = document.getElementById('results');
+
+        // Store full text in a JS map so we don't wrestle with inline escaping
+        const fullTextMap = {};
+
+        input.addEventListener('keydown', e => { if (e.key === 'Enter') doSearch(); });
+
+        async function doSearch() {
+            const query = input.value.trim();
+            if (!query) return;
+
+            btn.disabled = true;
+            spinner.classList.add('active');
+            results.innerHTML = '';
+
+            try {
+                const resp = await fetch('/search', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ query }),
+                });
+                const data = await resp.json();
+
+                if (data.error) {
+                    results.innerHTML = `<div class="error-msg">${data.error}</div>`;
+                    return;
+                }
+
+                let html = `<div class="query-echo">Results for: <strong>${escHtml(data.query)}</strong></div>`;
+
+                // Hits table
+                html += `<div class="section-title">ANN Hits (Top-K)</div>`;
+                html += `<table class="hits-table"><thead><tr>
+                    <th>Score</th><th>Title</th><th>Chunk</th><th>Preview</th>
+                </tr></thead><tbody>`;
+                for (const h of data.hits) {
+                    const cls = h.score >= 0.35 ? 'score-high' : h.score >= 0.2 ? 'score-mid' : 'score-low';
+                    html += `<tr>
+                        <td><span class="score-badge ${cls}">${h.score}</span></td>
+                        <td>${escHtml(h.title)}</td>
+                        <td>${h.chunk_index}</td>
+                        <td>${escHtml(h.preview)}</td>
+                    </tr>`;
+                }
+                html += `</tbody></table>`;
+
+                // Contexts
+                html += `<div class="section-title">Windowed Contexts (merged spans)</div>`;
+                for (const c of data.contexts) {
+                    const shortText = c.text.length > 600 ? c.text.slice(0, 600) + '…' : c.text;
+                    const needsToggle = c.text.length > 600;
+                    const uid = 'ctx_' + Math.random().toString(36).slice(2, 8);
+                    // Store full text in JS map
+                    fullTextMap[uid] = c.text;
+                    html += `<div class="context-card">
+                        <div class="context-header">
+                            <span class="context-title">${escHtml(c.title)}</span>
+                            <span>
+                                <span class="tag">chunks ${c.span}</span>
+                                <span class="tag">~${c.approx_words} words</span>
+                                <span class="tag">${c.span_count} span(s)</span>
+                            </span>
+                        </div>
+                        <div class="context-text" id="${uid}">${escHtml(shortText)}</div>
+                        ${needsToggle ? `<button class="toggle-btn" onclick="toggleCtx(this, '${uid}')">Show full text</button>` : ''}
+                    </div>`;
+                }
+
+                results.innerHTML = html;
+            } catch (err) {
+                results.innerHTML = `<div class="error-msg">Request failed: ${err.message}</div>`;
+            } finally {
+                btn.disabled = false;
+                spinner.classList.remove('active');
+            }
+        }
+
+        function toggleCtx(btnEl, uid) {
+            const el = document.getElementById(uid);
+            const fullText = fullTextMap[uid];
+            if (btnEl.textContent === 'Show full text') {
+                el.textContent = fullText;
+                el.style.maxHeight = '600px';
+                btnEl.textContent = 'Collapse';
+            } else {
+                el.textContent = fullText.slice(0, 600) + '…';
+                el.style.maxHeight = '260px';
+                btnEl.textContent = 'Show full text';
+            }
+        }
+
+        function escHtml(s) {
+            const d = document.createElement('div');
+            d.textContent = s;
+            return d.innerHTML;
+        }
+    </script>
+</body>
+</html>

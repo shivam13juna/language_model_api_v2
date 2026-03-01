@@ -1,0 +1,6 @@
+{
+  "EMBED_MODEL": "embeddinggemma:latest",
+  "WORDS_PER_CHUNK": 300,
+  "OVERLAP_WORDS": 60,
+  "TOPK": 5
+}
