@@ -1,0 +1,108 @@
+{
+  "created_at": "2026-03-05T21:28:20",
+  "settings": {
+    "OLLAMA_URL": "http://localhost:11434",
+    "CHAT_MODEL": "llama3.1:8b",
+    "EMBED_MODEL": "embeddinggemma:latest",
+    "WORDS_PER_CHUNK": 300,
+    "OVERLAP_WORDS": 60,
+    "CHROMA_COLLECTION": "rag_demo",
+    "CHROMA_DISTANCE": "cosine"
+  },
+  "chunk_count": 8509,
+  "embedding_dim": 768,
+  "corpus_fingerprint": "aaaad9ce34669383edcd113f73d5aa12e1134cb0e9f858eb0f6a20d69700e0c2",
+  "docs": [
+    {
+      "title": "Moby-Dick",
+      "url": "https://www.gutenberg.org/files/2701/2701-0.txt",
+      "path": "corpus_jupyter/Moby-Dick.txt",
+      "words": 212796,
+      "fingerprint": "Moby-Dick.txt|1234504|1772722524"
+    },
+    {
+      "title": "Pride and Prejudice",
+      "url": "https://www.gutenberg.org/files/1342/1342-0.txt",
+      "path": "corpus_jupyter/Pride_and_Prejudice.txt",
+      "words": 127359,
+      "fingerprint": "Pride_and_Prejudice.txt|737913|1772722524"
+    },
+    {
+      "title": "Frankenstein",
+      "url": "https://www.gutenberg.org/files/84/84-0.txt",
+      "path": "corpus_jupyter/Frankenstein.txt",
+      "words": 75042,
+      "fingerprint": "Frankenstein.txt|421535|1772722524"
+    },
+    {
+      "title": "Alice in Wonderland",
+      "url": "https://www.gutenberg.org/cache/epub/11/pg11.txt",
+      "path": "corpus_jupyter/Alice_in_Wonderland.txt",
+      "words": 26525,
+      "fingerprint": "Alice_in_Wonderland.txt|154473|1772722524"
+    },
+    {
+      "title": "Dracula",
+      "url": "https://www.gutenberg.org/files/345/345-0.txt",
+      "path": "corpus_jupyter/Dracula.txt",
+      "words": 161321,
+      "fingerprint": "Dracula.txt|870539|1772722524"
+    },
+    {
+      "title": "A Tale of Two Cities",
+      "url": "https://www.gutenberg.org/files/98/98-0.txt",
+      "path": "corpus_jupyter/A_Tale_of_Two_Cities.txt",
+      "words": 135886,
+      "fingerprint": "A_Tale_of_Two_Cities.txt|771502|1772722524"
+    },
+    {
+      "title": "The Great Gatsby",
+      "url": "https://www.gutenberg.org/cache/epub/64317/pg64317.txt",
+      "path": "corpus_jupyter/The_Great_Gatsby.txt",
+      "words": 48208,
+      "fingerprint": "The_Great_Gatsby.txt|286640|1772722524"
+    },
+    {
+      "title": "Adventures of Sherlock Holmes",
+      "url": "https://www.gutenberg.org/files/1661/1661-0.txt",
+      "path": "corpus_jupyter/Adventures_of_Sherlock_Holmes.txt",
+      "words": 107562,
+      "fingerprint": "Adventures_of_Sherlock_Holmes.txt|607498|1772722524"
+    },
+    {
+      "title": "War and Peace",
+      "url": "https://www.gutenberg.org/files/2600/2600-0.txt",
+      "path": "corpus_jupyter/War_and_Peace.txt",
+      "words": 563286,
+      "fingerprint": "War_and_Peace.txt|3339772|1772722524"
+    },
+    {
+      "title": "Jane Eyre",
+      "url": "https://www.gutenberg.org/files/1260/1260-0.txt",
+      "path": "corpus_jupyter/Jane_Eyre.txt",
+      "words": 185390,
+      "fingerprint": "Jane_Eyre.txt|1043962|1772722524"
+    },
+    {
+      "title": "The Picture of Dorian Gray",
+      "url": "https://www.gutenberg.org/files/174/174-0.txt",
+      "path": "corpus_jupyter/The_Picture_of_Dorian_Gray.txt",
+      "words": 78979,
+      "fingerprint": "The_Picture_of_Dorian_Gray.txt|445978|1772722524"
+    },
+    {
+      "title": "Crime and Punishment",
+      "url": "https://www.gutenberg.org/files/2554/2554-0.txt",
+      "path": "corpus_jupyter/Crime_and_Punishment.txt",
+      "words": 203505,
+      "fingerprint": "Crime_and_Punishment.txt|1159818|1772722524"
+    },
+    {
+      "title": "Wuthering Heights",
+      "url": "https://www.gutenberg.org/files/768/768-0.txt",
+      "path": "corpus_jupyter/Wuthering_Heights.txt",
+      "words": 115945,
+      "fingerprint": "Wuthering_Heights.txt|661716|1772722524"
+    }
+  ]
+}
