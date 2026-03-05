@@ -1,0 +1,105 @@
+{
+  "chunk_count": 8509,
+  "embed_dim": 768,
+  "embed_model": "embeddinggemma:latest",
+  "chat_model": "llama3.1:8b",
+  "chunking": {
+    "words_per_chunk": 300,
+    "overlap_words": 60
+  },
+  "books_indexed": [
+    "moby-dick",
+    "pride-and-prejudice",
+    "frankenstein",
+    "alice-in-wonderland",
+    "dracula",
+    "a-tale-of-two-cities",
+    "the-great-gatsby",
+    "adventures-of-sherlock-holmes",
+    "war-and-peace",
+    "jane-eyre",
+    "the-picture-of-dorian-gray",
+    "crime-and-punishment",
+    "wuthering-heights"
+  ],
+  "docs": [
+    {
+      "title": "Moby-Dick",
+      "doc_id": "moby-dick",
+      "url": "https://www.gutenberg.org/files/2701/2701-0.txt",
+      "n_chunks": 887
+    },
+    {
+      "title": "Pride and Prejudice",
+      "doc_id": "pride-and-prejudice",
+      "url": "https://www.gutenberg.org/files/1342/1342-0.txt",
+      "n_chunks": 531
+    },
+    {
+      "title": "Frankenstein",
+      "doc_id": "frankenstein",
+      "url": "https://www.gutenberg.org/files/84/84-0.txt",
+      "n_chunks": 313
+    },
+    {
+      "title": "Alice in Wonderland",
+      "doc_id": "alice-in-wonderland",
+      "url": "https://www.gutenberg.org/cache/epub/11/pg11.txt",
+      "n_chunks": 111
+    },
+    {
+      "title": "Dracula",
+      "doc_id": "dracula",
+      "url": "https://www.gutenberg.org/files/345/345-0.txt",
+      "n_chunks": 672
+    },
+    {
+      "title": "A Tale of Two Cities",
+      "doc_id": "a-tale-of-two-cities",
+      "url": "https://www.gutenberg.org/files/98/98-0.txt",
+      "n_chunks": 566
+    },
+    {
+      "title": "The Great Gatsby",
+      "doc_id": "the-great-gatsby",
+      "url": "https://www.gutenberg.org/cache/epub/64317/pg64317.txt",
+      "n_chunks": 201
+    },
+    {
+      "title": "Adventures of Sherlock Holmes",
+      "doc_id": "adventures-of-sherlock-holmes",
+      "url": "https://www.gutenberg.org/files/1661/1661-0.txt",
+      "n_chunks": 448
+    },
+    {
+      "title": "War and Peace",
+      "doc_id": "war-and-peace",
+      "url": "https://www.gutenberg.org/files/2600/2600-0.txt",
+      "n_chunks": 2347
+    },
+    {
+      "title": "Jane Eyre",
+      "doc_id": "jane-eyre",
+      "url": "https://www.gutenberg.org/files/1260/1260-0.txt",
+      "n_chunks": 773
+    },
+    {
+      "title": "The Picture of Dorian Gray",
+      "doc_id": "the-picture-of-dorian-gray",
+      "url": "https://www.gutenberg.org/files/174/174-0.txt",
+      "n_chunks": 329
+    },
+    {
+      "title": "Crime and Punishment",
+      "doc_id": "crime-and-punishment",
+      "url": "https://www.gutenberg.org/files/2554/2554-0.txt",
+      "n_chunks": 848
+    },
+    {
+      "title": "Wuthering Heights",
+      "doc_id": "wuthering-heights",
+      "url": "https://www.gutenberg.org/files/768/768-0.txt",
+      "n_chunks": 483
+    }
+  ]
+}

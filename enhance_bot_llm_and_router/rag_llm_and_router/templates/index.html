@@ -1,0 +1,705 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gutenberg RAG + Agent Demo — Classroom Edition</title>
+    <style>
+        :root {
+            --bg: #0a0e27;
+            --surface: #151d3b;
+            --surface-alt: #1f2d47;
+            --border: #2d3f5e;
+            --accent: #6366f1;
+            --accent-hover: #818cf8;
+            --success: #10b981;
+            --warmth: #f59e0b;
+            --text: #f0f4f8;
+            --text-muted: #94a3b8;
+            --text-subtle: #64748b;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', sans-serif;
+            background: linear-gradient(135deg, var(--bg) 0%, #0f1433 100%);
+            color: var(--text);
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 3rem 2rem;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 3rem;
+            padding-bottom: 2rem;
+            border-bottom: 1px solid var(--border);
+        }
+
+        header h1 {
+            font-size: 2.5rem;
+            font-weight: 800;
+            margin-bottom: 0.6rem;
+            background: linear-gradient(135deg, #6366f1 0%, #ec4899 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        header .subtitle {
+            color: var(--text-muted);
+            font-size: 1.1rem;
+            margin-bottom: 1.5rem;
+            font-weight: 300;
+        }
+
+
+        .books-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+            gap: 0.8rem;
+            margin-top: 1.5rem;
+        }
+
+        .book-chip {
+            background: var(--surface-alt);
+            border: 1px solid var(--border);
+            padding: 0.6rem 0.9rem;
+            border-radius: 8px;
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            text-align: center;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        /* Search bar */
+        .search-section {
+            margin-bottom: 2.5rem;
+        }
+
+        .search-bar {
+            display: flex;
+            gap: 0.8rem;
+            margin-bottom: 1rem;
+        }
+
+        .search-input-wrapper {
+            flex: 1;
+            position: relative;
+        }
+
+        .search-input-wrapper input {
+            width: 100%;
+            padding: 1rem 1.2rem;
+            border-radius: 10px;
+            border: 2px solid var(--border);
+            background: var(--surface);
+            color: var(--text);
+            font-size: 1rem;
+            outline: none;
+            transition: all 0.3s ease;
+        }
+
+        .search-input-wrapper input:focus {
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+        }
+
+        .search-input-wrapper input::placeholder {
+            color: var(--text-subtle);
+        }
+
+        .search-bar button {
+            padding: 1rem 2rem;
+            border: none;
+            border-radius: 10px;
+            background: linear-gradient(135deg, var(--accent) 0%, #8b5cf6 100%);
+            color: #fff;
+            font-size: 0.95rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            white-space: nowrap;
+            box-shadow: 0 4px 15px rgba(99, 102, 241, 0.3);
+        }
+
+        .search-bar button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 25px rgba(99, 102, 241, 0.4);
+        }
+
+        .search-bar button:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        /* Demo prompts */
+        .demo-prompts {
+            margin-top: 1rem;
+        }
+
+        .demo-label {
+            font-size: 0.8rem;
+            color: var(--text-subtle);
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            margin-bottom: 0.6rem;
+            font-weight: 600;
+        }
+
+        .prompt-buttons {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.6rem;
+        }
+
+        .prompt-btn {
+            padding: 0.5rem 0.9rem;
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            background: transparent;
+            color: var(--text-muted);
+            font-size: 0.75rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .prompt-btn:hover {
+            border-color: var(--accent);
+            color: var(--accent);
+            background: rgba(99, 102, 241, 0.1);
+        }
+
+        /* Spinner */
+        .spinner {
+            display: none;
+            text-align: center;
+            padding: 3rem 0;
+        }
+
+        .spinner.active { display: block; }
+
+        .spinner-dot {
+            display: inline-block;
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: var(--accent);
+            margin: 0 4px;
+            animation: bounce 1.4s infinite;
+        }
+
+        .spinner-dot:nth-child(2) { animation-delay: 0.2s; }
+        .spinner-dot:nth-child(3) { animation-delay: 0.4s; }
+
+        @keyframes bounce {
+            0%, 80%, 100% { transform: scale(0.8); opacity: 0.5; }
+            40% { transform: scale(1); opacity: 1; }
+        }
+
+        .spinner-text {
+            margin-top: 1rem;
+            color: var(--text-muted);
+            font-size: 0.9rem;
+        }
+
+        /* Results container */
+        #results {
+            margin-top: 2rem;
+        }
+
+        .result-section {
+            margin-bottom: 2.5rem;
+        }
+
+        .section-header {
+            display: flex;
+            align-items: center;
+            gap: 0.8rem;
+            margin-bottom: 1.2rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .section-icon {
+            font-size: 1.3rem;
+        }
+
+        .section-title {
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: var(--text);
+        }
+
+        .section-meta {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            margin-left: auto;
+        }
+
+        /* Intent badge */
+        .intent-badge {
+            display: inline-block;
+            background: linear-gradient(135deg, var(--warmth) 0%, #f97316 100%);
+            color: #fff;
+            padding: 0.5rem 1rem;
+            border-radius: 6px;
+            font-size: 0.85rem;
+            font-weight: 600;
+        }
+
+        .confidence-badge {
+            display: inline-block;
+            background: var(--surface-alt);
+            border: 1px solid var(--border);
+            color: var(--text-muted);
+            padding: 0.35rem 0.7rem;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            margin-left: 0.5rem;
+        }
+
+        /* Tool calls display */
+        .tool-calls-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.6rem;
+            margin-top: 0.8rem;
+        }
+
+        .tool-badge {
+            display: inline-block;
+            background: var(--surface-alt);
+            border: 1px solid var(--accent);
+            color: var(--accent);
+            padding: 0.4rem 0.8rem;
+            border-radius: 5px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            font-family: 'Courier New', monospace;
+        }
+
+        /* Answer box */
+        .answer-box {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin-top: 1.2rem;
+            line-height: 1.7;
+            color: var(--text);
+            overflow-x: auto;
+        }
+
+        .answer-box code {
+            background: var(--surface-alt);
+            padding: 0.2rem 0.5rem;
+            border-radius: 4px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9em;
+            color: var(--success);
+        }
+
+        .answer-box cite {
+            color: var(--warmth);
+            font-weight: 600;
+            font-style: normal;
+        }
+
+        /* Context cards */
+        .context-card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 1.2rem;
+            margin-bottom: 1rem;
+            transition: all 0.3s ease;
+        }
+
+        .context-card:hover {
+            border-color: var(--accent);
+            background: var(--surface-alt);
+        }
+
+        .context-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 0.8rem;
+            flex-wrap: wrap;
+            gap: 0.6rem;
+        }
+
+        .context-title {
+            font-weight: 700;
+            font-size: 1rem;
+            color: var(--text);
+        }
+
+        .context-cite {
+            display: inline-block;
+            background: linear-gradient(135deg, var(--accent) 0%, #8b5cf6 100%);
+            color: #fff;
+            padding: 0.3rem 0.8rem;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            font-family: 'Courier New', monospace;
+        }
+
+        .context-meta {
+            display: flex;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+            margin-top: 0.4rem;
+        }
+
+        .context-tag {
+            display: inline-block;
+            background: var(--surface-alt);
+            border: 1px solid var(--border);
+            color: var(--text-muted);
+            padding: 0.2rem 0.5rem;
+            border-radius: 4px;
+            font-size: 0.7rem;
+            font-weight: 600;
+        }
+
+        .context-text {
+            font-size: 0.9rem;
+            line-height: 1.6;
+            color: var(--text-muted);
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            max-height: 300px;
+            overflow-y: auto;
+            margin-top: 0.8rem;
+            padding-right: 0.8rem;
+        }
+
+        .context-text::-webkit-scrollbar { width: 6px; }
+        .context-text::-webkit-scrollbar-track { background: var(--surface-alt); border-radius: 3px; }
+        .context-text::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+        .context-text::-webkit-scrollbar-thumb:hover { background: var(--accent); }
+
+        .toggle-btn {
+            margin-top: 0.8rem;
+            background: transparent;
+            border: none;
+            color: var(--accent);
+            cursor: pointer;
+            font-size: 0.8rem;
+            font-weight: 600;
+            padding: 0;
+            transition: all 0.2s ease;
+        }
+
+        .toggle-btn:hover {
+            color: var(--accent-hover);
+            text-decoration: underline;
+        }
+
+        /* Error box */
+        .error-msg {
+            color: #fca5a5;
+            background: rgba(244, 63, 94, 0.1);
+            border: 1px solid rgba(244, 63, 94, 0.3);
+            border-radius: 10px;
+            padding: 1.2rem;
+            margin-top: 1rem;
+        }
+
+        /* Query echo */
+        .query-echo {
+            color: var(--text-muted);
+            font-size: 0.9rem;
+            margin-bottom: 1rem;
+        }
+
+        .query-echo strong {
+            color: var(--text);
+            font-weight: 600;
+        }
+
+        /* Score badges */
+        .score-badge {
+            display: inline-block;
+            padding: 0.3rem 0.7rem;
+            border-radius: 5px;
+            font-weight: 700;
+            font-size: 0.75rem;
+            font-family: 'Courier New', monospace;
+        }
+
+        .score-high { background: rgba(16, 185, 129, 0.2); color: #6ee7b7; }
+        .score-mid { background: rgba(245, 158, 11, 0.2); color: #fcd34d; }
+        .score-low { background: rgba(107, 114, 128, 0.2); color: #d1d5db; }
+
+        /* Hits table */
+        .hits-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.85rem;
+        }
+
+        .hits-table th {
+            text-align: left;
+            padding: 0.8rem;
+            background: var(--surface-alt);
+            border-bottom: 2px solid var(--border);
+            color: var(--text-subtle);
+            font-weight: 700;
+            text-transform: uppercase;
+            font-size: 0.7rem;
+            letter-spacing: 0.08em;
+        }
+
+        .hits-table td {
+            padding: 0.8rem;
+            border-bottom: 1px solid var(--border);
+            vertical-align: top;
+        }
+
+        .hits-table tr:hover { background: rgba(99, 102, 241, 0.05); }
+
+        .hits-table tr:last-child td { border-bottom: none; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>📚 Gutenberg RAG + Agent Demo</h1>
+            <p class="subtitle">Local retrieval-augmented generation with Ollama + Chroma + Intent Router</p>
+            <p style="color: var(--text-subtle); font-size: 0.9rem;">{{ num_chunks }} chunks indexed • {{ chat_model }} • {{ embed_model }}</p>
+            <div class="books-grid" id="booksGrid"></div>
+        </header>
+
+        <div class="search-section">
+            <div class="search-bar">
+                <div class="search-input-wrapper">
+                    <input type="text" id="queryInput" 
+                           placeholder="Ask anything about the books: 'Who is Elizabeth Bennet?' or 'Find the quote about truth universally acknowledged'…"
+                           autofocus autocomplete="off" />
+                </div>
+                <button id="searchBtn" onclick="doSearch()">Ask</button>
+            </div>
+            <div class="demo-prompts">
+                <p class="demo-label">💡 Demo Prompts</p>
+                <div class="prompt-buttons" id="demoPrompts"></div>
+            </div>
+        </div>
+
+        <div class="spinner" id="spinner">
+            <span class="spinner-dot"></span>
+            <span class="spinner-dot"></span>
+            <span class="spinner-dot"></span>
+            <p class="spinner-text">Searching and reasoning…</p>
+        </div>
+
+        <div id="results"></div>
+    </div>
+
+    <script>
+        const input = document.getElementById('queryInput');
+        const btn = document.getElementById('searchBtn');
+        const spinner = document.getElementById('spinner');
+        const results = document.getElementById('results');
+
+        const fullTextMap = {};
+
+        const demoQueries = [
+            "Find the quote 'It is a truth universally acknowledged' and tell me which book it's from. Include the citation.",
+            "Who is Elizabeth Bennet? Give 3 key traits with citations.",
+            "Compare Jane Eyre vs Elizabeth Bennet: what do they value most, and how do they respond to social pressure? Cite sources.",
+            "Write a short scene where Sherlock Holmes interviews Victor Frankenstein about responsibility. Use at most one direct quote from each book and cite those quotes.",
+            "How does Victor Frankenstein create life? Answer using citations.",
+            "Show stats for Pride and Prejudice"
+        ];
+
+        // Populate demo prompt buttons
+        function setupDemoPrompts() {
+            const container = document.getElementById('demoPrompts');
+            demoQueries.forEach(q => {
+                const btn = document.createElement('button');
+                btn.className = 'prompt-btn';
+                btn.textContent = q;
+                btn.onclick = () => { input.value = q; doSearch(); };
+                container.appendChild(btn);
+            });
+        }
+
+        // Populate books grid
+        function setupBooksGrid(books) {
+            const container = document.getElementById('booksGrid');
+            if (books && books.length > 0) {
+                const html = books.map(b => `<div class="book-chip" title="${escHtml(b)}">${escHtml(b)}</div>`).join('');
+                container.innerHTML = html;
+            }
+        }
+
+        input.addEventListener('keydown', e => { if (e.key === 'Enter') doSearch(); });
+
+        async function doSearch() {
+            const query = input.value.trim();
+            if (!query) return;
+
+            btn.disabled = true;
+            spinner.classList.add('active');
+            results.innerHTML = '';
+
+            try {
+                const resp = await fetch('/ask', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ query }),
+                });
+                const data = await resp.json();
+
+                if (data.error) {
+                    results.innerHTML = `<div class="error-msg">❌ Error: ${escHtml(data.error)}</div>`;
+                    return;
+                }
+
+                let html = `<div class="query-echo">🔍 Query: <strong>"${escHtml(data.query)}"</strong></div>`;
+
+                // Intent router results
+                if (data.intent || data.tools_used) {
+                    html += `<div class="result-section">
+                        <div class="section-header">
+                            <span class="section-icon">🎯</span>
+                            <span class="section-title">Intent Router</span>
+                        </div>`;
+                    if (data.intent) {
+                        html += `<div style="margin-bottom: 0.8rem;">
+                            <span class="intent-badge">${escHtml(data.intent)}</span>
+                            ${(data.confidence !== undefined && data.confidence !== null) ? `<span class="confidence-badge">↑ ${(data.confidence * 100).toFixed(0)}%</span>` : ''}
+                        </div>`;
+                    }
+                    if (data.tools_used && data.tools_used.length > 0) {
+                        html += `<div style="margin-bottom: 0.8rem;">
+                            <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 0.5rem;">Tools used:</p>
+                            <div class="tool-calls-list">
+                                ${data.tools_used.map(t => `<span class="tool-badge">⚙️ ${escHtml(typeof t === 'string' ? t : (t?.tool || JSON.stringify(t)))}</span>`).join('')}
+                            </div>
+                        </div>`;
+                    }
+                    html += `</div>`;
+                }
+
+                // ANN Hits table
+                if (data.hits && data.hits.length > 0) {
+                    html += `<div class="result-section">
+                        <div class="section-header">
+                            <span class="section-icon">🔎</span>
+                            <span class="section-title">Retrieved Chunks (Semantic Search)</span>
+                            <span class="section-meta">${data.hits.length} result(s)</span>
+                        </div>
+                        <table class="hits-table"><thead><tr>
+                            <th>Score</th><th>Title</th><th>Chunk</th>
+                        </tr></thead><tbody>`;
+                    for (const h of data.hits) {
+                        const cls = h.distance !== null && h.distance <= 0.3 ? 'score-high' : h.distance !== null && h.distance <= 0.5 ? 'score-mid' : 'score-low';
+                        const scoreStr = h.distance !== null ? `${(h.distance).toFixed(3)}` : 'N/A';
+                        html += `<tr>
+                            <td><span class="score-badge ${cls}">${scoreStr}</span></td>
+                            <td><strong>${escHtml(h.title)}</strong></td>
+                            <td><code>${h.cite || `[${h.doc_id}#${h.chunk_index}]`}</code></td>
+                        </tr>`;
+                    }
+                    html += `</tbody></table></div>`;
+                }
+
+                // Context snippets from tool outputs
+                if (data.contexts && data.contexts.length > 0) {
+                    html += `<div class="result-section">
+                        <div class="section-header">
+                            <span class="section-icon">📖</span>
+                            <span class="section-title">Tool Evidence Snippets</span>
+                            <span class="section-meta">${data.contexts.length} context(s)</span>
+                        </div>`;
+                    for (const c of data.contexts) {
+                        const shortText = c.text.length > 600 ? c.text.slice(0, 600) + '…' : c.text;
+                        const needsToggle = c.text.length > 600;
+                        const uid = 'ctx_' + Math.random().toString(36).slice(2, 8);
+                        fullTextMap[uid] = c.text;
+                        html += `<div class="context-card">
+                            <div class="context-header">
+                                <div>
+                                    <div class="context-title">${escHtml(c.title)}</div>
+                                    <div class="context-meta">
+                                        <span class="context-cite">${escHtml(c.cite || `[${c.doc_id}#${c.chunk_index}]`)}</span>
+                                        <span class="context-tag">chunks ${c.span || '?'}</span>
+                                        <span class="context-tag">~${c.approx_words || '?'} words</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="context-text" id="${uid}">${escHtml(shortText)}</div>
+                            ${needsToggle ? `<button class="toggle-btn" onclick="toggleCtx(this, '${uid}')">→ Show full text</button>` : ''}
+                        </div>`;
+                    }
+                    html += `</div>`;
+                }
+
+                // Final answer
+                if (data.answer) {
+                    html += `<div class="result-section">
+                        <div class="section-header">
+                            <span class="section-icon">💬</span>
+                            <span class="section-title">Agent Response</span>
+                        </div>
+                        <div class="answer-box">${formatAnswer(data.answer)}</div>
+                    </div>`;
+                }
+
+                results.innerHTML = html;
+            } catch (err) {
+                results.innerHTML = `<div class="error-msg">❌ Request failed: ${escHtml(err.message)}</div>`;
+            } finally {
+                btn.disabled = false;
+                spinner.classList.remove('active');
+            }
+        }
+
+        function formatAnswer(text) {
+            // Escape HTML and preserve basic formatting
+            let formatted = escHtml(text);
+            // Optionally, you could add support for markdown-like conversion here
+            return formatted;
+        }
+
+        function toggleCtx(btnEl, uid) {
+            const el = document.getElementById(uid);
+            const fullText = fullTextMap[uid];
+            if (btnEl.textContent.includes('Show')) {
+                el.textContent = fullText;
+                el.style.maxHeight = '600px';
+                btnEl.textContent = '← Collapse';
+            } else {
+                el.textContent = fullText.slice(0, 600) + '…';
+                el.style.maxHeight = '300px';
+                btnEl.textContent = '→ Show full text';
+            }
+        }
+
+        function escHtml(s) {
+            const d = document.createElement('div');
+            d.textContent = s;
+            return d.innerHTML;
+        }
+
+        // Initialize
+        setupDemoPrompts();
+        // Load books info from page data
+        const booksData = JSON.parse('{{ books_json | safe }}' || '[]');
+        setupBooksGrid(booksData);
+    </script>
+</body>
+</html>
